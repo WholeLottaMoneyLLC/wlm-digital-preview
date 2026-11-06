@@ -1,0 +1,155 @@
+/* ==========================================================================
+   Services — six glass cards, each with its own small animated diagram.
+   Mobile first: 1 col -> 2 cols (600px) -> 4-col bento (1100px).
+   Without JS every diagram simply shows its finished state.
+   ========================================================================== */
+.services { overflow: clip; }
+.services::before, .services::after { content: ""; position: absolute; pointer-events: none; z-index: 0; border-radius: 50%; }
+.services::before { width: 60vw; height: 60vw; max-width: 760px; max-height: 760px; left: -20vw; top: 8%; background: radial-gradient(closest-side, rgba(46, 230, 166, 0.07), transparent); }
+.services::after { width: 60vw; height: 60vw; max-width: 760px; max-height: 760px; right: -22vw; bottom: 4%; background: radial-gradient(closest-side, rgba(139, 92, 246, 0.09), transparent); }
+.services > .container { position: relative; z-index: 1; }
+.svc-defs { position: absolute; }
+
+/* Light line: falls from the hero into the eyebrow (scrubbed by scroll) */
+.svc-line { position: absolute; z-index: 2; left: var(--gutter); top: calc(-1 * var(--section-y)); width: 1px; height: calc(var(--section-y) + 8px); pointer-events: none; }
+.svc-line__clip { position: absolute; inset: 0; overflow: hidden; }
+.svc-line__fill { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(46, 230, 166, 0) 0%, rgba(46, 230, 166, 0.55) 45%, #46dccb 82%, #a9ffe3 100%); box-shadow: 0 0 10px rgba(46, 230, 166, 0.55); }
+.svc-line__dot { position: absolute; left: 50%; bottom: 0; width: 7px; height: 7px; margin: 0 0 -3px -3px; border-radius: 50%; background: var(--emerald); box-shadow: 0 0 0 4px rgba(46, 230, 166, 0.14), 0 0 16px rgba(46, 230, 166, 0.8); }
+
+/* ---------- Grid ---------- */
+.svc-grid { list-style: none; display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+.svc { display: flex; min-width: 0; }
+.svc__card {
+  --lx: 50%; --ly: 0%; --light: rgba(46, 230, 166, 0.14);
+  position: relative; display: flex; flex-direction: column; width: 100%; padding: 0.75rem 0.75rem 1.1rem;
+  background: linear-gradient(180deg, rgba(20, 28, 46, 0.7), rgba(9, 14, 25, 0.78));
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.5s var(--ease-out), box-shadow var(--dur) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+.glow-v.svc__card { --light: rgba(139, 92, 246, 0.2); }
+/* pointer-tracked light (the lit border is ::before from site.css) */
+.svc__card::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; z-index: 0;
+  background: radial-gradient(380px circle at var(--lx) var(--ly), var(--light), transparent 62%);
+  transition: opacity var(--dur) var(--ease-out);
+}
+.svc__card > * { position: relative; z-index: 1; }
+.svc__body { display: flex; flex-direction: column; gap: 0.6rem; padding: 1rem 0.65rem 0; flex: 1; }
+.svc__body p { font-size: 0.975rem; line-height: 1.6; }
+.svc__body .text-link { margin-top: auto; align-self: flex-start; padding-top: 0.4rem; }
+.svc__body p + .text-link { margin-top: 0.5rem; }
+
+@media (hover: none) { .svc__card:active { transform: scale(0.985); box-shadow: var(--edge-light), 0 4px 18px -8px rgba(0, 0, 0, 0.8); } }
+@media (hover: hover) and (pointer: fine) {
+  .svc__card:hover::after { opacity: 1; }
+  .svc__card:hover { box-shadow: var(--edge-light), 0 18px 46px -18px rgba(0, 0, 0, 0.85); }
+}
+
+/* ---------- Diagram box ---------- */
+.svc__viz {
+  position: relative; overflow: hidden; aspect-ratio: 16 / 10; border-radius: var(--r-md);
+  background:
+    radial-gradient(70% 90% at 12% 0%, rgba(46, 230, 166, 0.09), transparent 70%),
+    radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1.3px) 0 0 / 16px 16px,
+    linear-gradient(180deg, rgba(4, 7, 13, 0.8), rgba(7, 12, 22, 0.8));
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.glow-v .svc__viz { background:
+    radial-gradient(70% 90% at 88% 0%, rgba(139, 92, 246, 0.13), transparent 70%),
+    radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1.3px) 0 0 / 16px 16px,
+    linear-gradient(180deg, rgba(4, 7, 13, 0.8), rgba(7, 12, 22, 0.8)); }
+.vz { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: none; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.vz .d { stroke-dasharray: 1 2; stroke-dashoffset: 0; }
+.vz .l { stroke: rgba(255, 255, 255, 0.36); }
+.vz .l2 { stroke: rgba(255, 255, 255, 0.18); }
+.vz .e { stroke: var(--emerald); }
+.vz .v { stroke: var(--violet); }
+.vz .t { stroke: rgba(255, 255, 255, 0.62); stroke-width: 3.2; }
+.vz .dim { stroke-width: 1; opacity: 0.85; }
+.vz .fw { fill: rgba(255, 255, 255, 0.45); }
+.vz .fe { fill: var(--emerald); }
+.vz .fill-e { fill: rgba(46, 230, 166, 0.22); }
+.vz .fill-g { fill: url(#svc-grad); fill-opacity: 0.16; }
+
+/* 2 Redesign */
+.vz .blk { fill: rgba(255, 255, 255, 0.06); stroke: rgba(255, 255, 255, 0.3); stroke-width: 1.2; }
+.vz .blk.strong { fill: rgba(255, 255, 255, 0.5); stroke: none; }
+.vz .blk.acc-e { fill: rgba(46, 230, 166, 0.92); stroke: none; }
+.vz .blk.acc-v { fill: url(#svc-grad); fill-opacity: 0.28; stroke: var(--violet); }
+.vz .junk > * { opacity: 0; }
+.vz .junk .jl { stroke: rgba(255, 255, 255, 0.32); stroke-width: 1.2; }
+.vz .junk .jv { stroke: var(--violet); stroke-width: 1.2; fill: rgba(139, 92, 246, 0.12); }
+
+/* 3 Responsive */
+.vz .rf { fill: rgba(10, 16, 28, 0.9); stroke: var(--emerald); stroke-width: 1.4; }
+.vz .rb { fill: rgba(255, 255, 255, 0.08); stroke: rgba(255, 255, 255, 0.22); stroke-width: 1; }
+.vz .rb.hero { fill: url(#svc-grad); fill-opacity: 0.3; stroke: rgba(139, 92, 246, 0.6); }
+.vz .pip { fill: var(--emerald); opacity: 0.28; }
+.vz .pip[data-pip="0"] { opacity: 1; }
+
+/* 4 Care */
+.vz .ring { stroke: var(--emerald); stroke-width: 1.2; opacity: 0; transform-box: fill-box; transform-origin: center; }
+.vz .badge { fill: rgba(46, 230, 166, 0.1); }
+.vz .track { stroke: rgba(255, 255, 255, 0.12); }
+.vz .ecg { stroke-width: 1.8; filter: drop-shadow(0 0 3px rgba(46, 230, 166, 0.7)); }
+.vz .head { fill: #c8ffee; opacity: 0; filter: drop-shadow(0 0 5px rgba(46, 230, 166, 0.95)); }
+.vz .task .fe-s { fill: rgba(46, 230, 166, 0.16); stroke: var(--emerald); stroke-width: 1; }
+.vz .task .check-s { stroke: var(--emerald); stroke-width: 1.3; }
+
+/* 5 Speed */
+.vz .g-fill { stroke: url(#svc-grad); stroke-width: 6; stroke-dashoffset: 0.18; }
+.vz .g-track { stroke: rgba(255, 255, 255, 0.12); stroke-width: 6; }
+.vz .ndl { stroke: #e9fff7; stroke-width: 2.2; }
+.vz .hub { fill: #0b111e; stroke: #e9fff7; stroke-width: 2; }
+.vz .bar { fill: rgba(255, 255, 255, 0.2); }
+.vz .bar:nth-of-type(1) { fill: rgba(46, 230, 166, 0.85); }
+.vz .done { stroke-width: 2; }
+
+/* 6 E-commerce demo (HTML, real button) */
+.svc__viz--shop { aspect-ratio: auto; min-height: 232px; display: grid; place-items: center; }
+.shop { position: relative; width: 100%; height: 100%; display: grid; place-items: center; padding: 1rem; }
+.shop__tile { width: min(100%, 196px); padding: 8px; border-radius: 14px; background: linear-gradient(180deg, rgba(24, 33, 54, 0.92), rgba(13, 19, 33, 0.92)); box-shadow: inset 0 0 0 1px var(--line-strong), 0 14px 30px -14px rgba(0, 0, 0, 0.8); }
+.shop__img { height: 64px; border-radius: 9px; display: grid; place-items: center; background: radial-gradient(90% 120% at 30% 0%, rgba(46, 230, 166, 0.28), transparent 70%), radial-gradient(90% 120% at 100% 100%, rgba(139, 92, 246, 0.4), transparent 70%), #0a1120; }
+.shop__img svg { height: 36px; width: auto; }
+.shop__meta { display: grid; gap: 6px; margin: 10px 2px 10px; }
+.shop__meta i { display: block; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.2); }
+.shop__meta i:last-child { width: 55%; background: rgba(255, 255, 255, 0.12); }
+.shop__btn {
+  position: relative; display: grid; place-items: center; width: 100%; min-height: 44px; border: 0; border-radius: 10px;
+  font-family: var(--font-display); font-weight: 600; font-size: 0.875rem; color: #04110b; background: var(--grad-brand);
+  box-shadow: 0 6px 22px -8px rgba(46, 230, 166, 0.6); overflow: hidden; -webkit-tap-highlight-color: transparent;
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur) var(--ease-out);
+}
+.shop__btn:active { transform: scale(0.96); }
+.shop__btn-idle, .shop__btn-done { grid-area: 1 / 1; display: inline-flex; align-items: center; gap: 0.4em; transition: transform 0.5s var(--ease-out), opacity 0.3s; }
+.shop__btn-done svg { width: 1.1em; height: 1.1em; }
+.shop__btn-done { transform: translateY(120%); opacity: 0; }
+.shop.is-added .shop__btn-idle { transform: translateY(-120%); opacity: 0; }
+.shop.is-added .shop__btn-done { transform: none; opacity: 1; }
+.shop.is-added .shop__btn { background: #d9fff1; }
+.shop__cart { position: absolute; top: 12px; right: 12px; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; color: var(--text); background: rgba(255, 255, 255, 0.05); box-shadow: inset 0 0 0 1px var(--line-strong); }
+.shop__cart svg { width: 22px; height: 22px; }
+.shop__count { position: absolute; top: -6px; right: -6px; min-width: 20px; height: 20px; padding: 0 5px; display: grid; place-items: center; border-radius: 10px; font: 700 0.72rem/1 var(--font-display); color: #04110b; background: var(--emerald); transform: scale(0); transition: transform 0.4s var(--ease-out); }
+.shop.has-items .shop__count { transform: scale(1); }
+.shop__dot { position: absolute; left: 0; top: 0; width: 10px; height: 10px; border-radius: 50%; background: var(--emerald); box-shadow: 0 0 14px rgba(46, 230, 166, 0.9); opacity: 0; pointer-events: none; }
+
+/* ---------- Breakpoints ---------- */
+@media (min-width: 600px) {
+  .svc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; }
+  .svc--wide { grid-column: 1 / -1; }
+  .svc--wide .svc__card { flex-direction: row; align-items: stretch; padding: 0.75rem; gap: 0.5rem; }
+  .svc--wide .svc__viz { flex: 0 0 46%; aspect-ratio: auto; min-height: 220px; }
+  .svc--wide .svc__body { justify-content: center; padding: 1rem 1.4rem; }
+  .svc--wide .svc__body .text-link { margin-top: 0.5rem; }
+  .svc--6 .svc__card { flex-direction: row-reverse; }
+  .svc__body { padding-inline: 0.85rem; }
+}
+@media (min-width: 1100px) {
+  .svc-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .svc--wide { grid-column: span 2; }
+  .svc--wide .svc__card, .svc--6 .svc__card { flex-direction: column; padding: 0.75rem 0.75rem 1.1rem; gap: 0; }
+  .svc--wide .svc__viz { flex: none; aspect-ratio: 2.2 / 1; min-height: 0; }
+  .svc--wide .svc__body { justify-content: flex-start; padding: 1rem 0.85rem 0; }
+  .svc--wide .svc__body .text-link { margin-top: auto; }
+}
